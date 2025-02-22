@@ -539,7 +539,7 @@ int main(int argc, char** argv)
 		fprintf(stderr, "ERROR: cannot open one of provided files\n");
 		break;
 	default:
-		fprintf(stderr, "ERROR: unknown error :-P\n");
+		fprintf(stderr, "ERROR: unknown error: %d\n", ret);
 		break;
 	}
 

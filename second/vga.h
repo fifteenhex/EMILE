@@ -12,18 +12,18 @@
 
 #include "head.h"
 
-extern int vga_init(char *mode);
+extern int vga_init(const char *mode);
 
 extern void vga_put(char c);
 extern void vga_print(char *s);
 extern void vga_cursor_refresh(void);
 
-extern unsigned long vga_get_videobase();
-extern unsigned long vga_get_row_bytes();
-extern unsigned long vga_get_depth();
-extern unsigned long vga_get_width();
-extern unsigned long vga_get_height();
-extern unsigned long vga_get_video();
+extern unsigned long vga_get_videobase(void);
+extern unsigned long vga_get_row_bytes(void);
+extern unsigned long vga_get_depth(void);
+extern unsigned long vga_get_width(void);
+extern unsigned long vga_get_height(void);
+extern unsigned long vga_get_video(void);
 extern int vga_is_available(void);
 extern void vga_set_palette(RGBColor *palette);
 

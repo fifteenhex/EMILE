@@ -3,6 +3,7 @@
  * (c) 2004-2007 Laurent Vivier <Laurent@Vivier.EU>
  *
  */
+	.cpu 68040
 
 	.include "copymem.i"
 

@@ -4,8 +4,6 @@
  *
  */
 
-#define __NO_INLINE__
-
 #include <stdio.h>
 #include <malloc.h>
 #include <string.h>
@@ -52,6 +50,7 @@ extern u_int32_t _bootstrap_end;
 
 typedef void (*loader_t)(void);
 
+int start(emile_l2_header_t* info) __attribute__((externally_visible));
 int start(emile_l2_header_t* info)
 {
 	char *kernel;
@@ -160,8 +159,10 @@ retry:
 			goto retry;
 		}
 	}
-	else
+	else {
 		ramdisk_start = 0;
+		ramdisk_size = 0;
+	}
 
 #ifdef ARCH_M68K
 	if (arch_type == gestalt68k)
@@ -188,7 +189,7 @@ retry:
 #if defined(__LINUX__)
 			/* initialize bootinfo structure */
 
-			bootinfo_init(econfig.command_line, 
+			bootinfo_init(econfig.command_line,
 		      		ramdisk_start, ramdisk_size);
 
 			/* set bootinfo at end of kernel image */

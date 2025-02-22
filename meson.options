@@ -1,0 +1,1 @@
+option('ostype', type: 'combo', choices: ['m68k-linux', 'classic-linux', 'ppc-linux', 'mixed-linux', 'm68k-netbsd'])

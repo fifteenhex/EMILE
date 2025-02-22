@@ -13,24 +13,28 @@
 
 #include "libscsi.h"
 
-int scsi_REQUEST_SENSE(int target, void *buffer, size_t count)
+int scsi_REQUEST_SENSE(int target, volatile void *buffer, size_t count)
 {
-	unsigned char	cdb[6];
-	TIB_t	tib[2];
+	const unsigned char cdb[6] = {
+		REQUEST_SENSE,
+		0,
+		0,
+		0,
+		count,
+		0
+	};
+	const TIB_t tib[2] = {
+		{
+			.opcode = op_no_inc,
+			.param1 = (uint32_t) buffer,
+			.param2 = count
+		},
+		{
+			.opcode = op_stop,
+			.param1 = 0,
+			.param2 = 0
+		}
+	};
 
-	cdb[0] = REQUEST_SENSE;
-	cdb[1] = 0;
-	cdb[2] = 0;
-	cdb[3] = 0;
-	cdb[4] = count;
-	cdb[5] = 0;
-
-	tib[0].opcode = op_no_inc;
-	tib[0].param1 = (int)buffer;
-	tib[0].param2 = count;
-	tib[1].opcode = op_stop;
-	tib[1].param1 = 0;
-	tib[1].param2 = 0;
-
-	return scsi_command(target, cdb, 6, tib);
+	return scsi_command(target, cdb, sizeof(cdb), tib);
 }

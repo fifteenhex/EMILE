@@ -15,7 +15,7 @@ CPPFLAGS	= -DVERSION="\"$(VERSION)\"" -I$(TOP) -Wa,-I$(TOP) \
 		  -I$(TOP)/../libstream -I$(TOP)/../libui -I$(TOP)/../libconfig
 
 # -O2 is needed to be able to inline functions from libmacos
-CFLAGS		= $(OPT_CFLAGS) -nostdlib -nodefaultlibs -Wall -Werror -Wno-multichar -fpic -O2
+CFLAGS		= $(OPT_CFLAGS) -nostdlib -nodefaultlibs -Wall -Wno-multichar -fpic -O2 -fno-tree-loop-distribute-patterns
 ASFLAGS		=
 LIBS		= $(OPT_LIBS) \
 		  -L$(TOP)/../libiso9660/m68k-linux -liso9660 \
@@ -28,7 +28,8 @@ LIBS		= $(OPT_LIBS) \
 		  -L$(TOP)/../libcontainer -lcontainer -lunix \
 		  -L$(TOP)/../libui -lui \
 		  -L$(TOP)/../libconfig/m68k-linux -lconfig -lunix \
-		  -L$(TOP)/../libmap/m68k-linux -lmap
+		  -L$(TOP)/../libmap/m68k-linux -lmap \
+		  -L/usr/lib/gcc-cross/m68k-linux-gnu/14/ -lgcc
 
 LS		= ls
 AWK		= awk

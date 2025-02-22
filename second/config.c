@@ -4,8 +4,6 @@
  *
  */
 
-#define __NO_INLINE__
-
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>

@@ -26,19 +26,18 @@ static inline int scsi_busy(void)
 	return (SCSIStat() & (SCSI_BUSY | SCSI_SEL)) != 0;
 }
 
-static inline int scsi_wait_bus()
+static inline int scsi_wait_bus(void)
 {
-	int timeout;
-
-	timeout = Ticks + 300;
+	int timeout = Ticks + 300;
 
 	while (scsi_busy())
 		if (Ticks > timeout)
 			return scsiBusy;
+
 	return noErr;
 }
 
-int scsi_command(int target, unsigned char* cdb, int count, TIB_t* tib)
+int scsi_command(int target, const uint8_t *cdb, int count, const TIB_t* tib)
 {
 	int err;
 	short stat;
@@ -87,6 +86,7 @@ int scsi_command(int target, unsigned char* cdb, int count, TIB_t* tib)
 		return err;
 
 	return noErr;
+
 complete:
 	SCSIComplete(&stat, &message, COMPLETION_TIMEOUT);
 	return err;

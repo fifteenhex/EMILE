@@ -5,7 +5,6 @@
  */
 
 extern void list_unit(void);
-#define __NO_INLINE__
 
 #include <stdio.h>
 #include <malloc.h>
@@ -294,7 +293,7 @@ char* load_chainloader(char *path)
 
 	if (ret != stat.st_size)
 	{
-		printf("Cannot read %ld from %s\n", stat.st_size, path);
+		printf("Cannot read %jd from %s\n", stat.st_size, path);
 		free(loader);
 		return NULL;
 	}

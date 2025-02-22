@@ -9,11 +9,7 @@
 
 #include <unistd.h>
 #include <linux/fs.h>
-#ifdef CONFIG_E2FSLIBS
 #include <ext2fs/ext2_fs.h>
-#else
-#include <linux/ext2_fs.h>
-#endif
 
 #include <libstream.h>
 

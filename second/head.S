@@ -14,7 +14,7 @@
 
 /***************************************************************************
  *
- * second level arguments 
+ * second level arguments
  *
  ***************************************************************************/
 
@@ -42,7 +42,8 @@ setup:
 
 	lea	_start(%pc), %a0
 	move.l	%a0, -(%sp)
-	bsr	start@PLTPC
+	lea	start(%pc), %a0
+	jsr	(%a0)
 
 	/* We guess to never come here */
 loop:

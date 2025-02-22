@@ -137,8 +137,8 @@ typedef struct vga_handler {
 
 	unsigned int 	enabled;
 
-	unsigned char*	video;
-	unsigned char*	base;
+	volatile unsigned char*	video;
+	volatile unsigned char*	base;
 	unsigned long	row_bytes;	/* in bytes */
 	unsigned long	depth;		/* 4, 8, 16 or 32 */
 	unsigned long	width;		/* in pixels */
@@ -215,11 +215,10 @@ static int cursor_state = 0;
 
 extern unsigned char* font_get(int c);
 
-static void
-draw_cursor(void)
+static void draw_cursor(void)
 {
 	int l,w;
-	unsigned char *base;
+	volatile unsigned char *base;
 	unsigned long x_base;
 	unsigned long y_base;
 						        
@@ -291,8 +290,7 @@ static void vga_set_video_mode(int m)
 		vga.mask = 0xFF;
 }
 
-static void
-draw_byte_1(unsigned char *glyph, unsigned char *base)
+static void draw_byte_1(unsigned char *glyph, volatile unsigned char *base)
 {
 	int l;
 
@@ -303,8 +301,7 @@ draw_byte_1(unsigned char *glyph, unsigned char *base)
 	}
 }
 
-static void
-draw_byte_2(unsigned char *glyph, unsigned char *base)
+static void draw_byte_2(unsigned char *glyph, volatile unsigned char *base)
 {
 	int l;
 	int bits;
@@ -321,8 +318,7 @@ draw_byte_2(unsigned char *glyph, unsigned char *base)
 	}
 }
 
-static void
-draw_byte_4(unsigned char *glyph, unsigned char *base)
+static void draw_byte_4(unsigned char *glyph, volatile unsigned char *base)
 {
 	int l;
 	int bits;
@@ -346,8 +342,7 @@ draw_byte_4(unsigned char *glyph, unsigned char *base)
 	}
 }
 
-static void
-draw_byte_8(unsigned char *glyph, unsigned char *base)
+static void draw_byte_8(unsigned char *glyph, volatile unsigned char *base)
 {
 	int l;
 	int bits;
@@ -376,8 +371,7 @@ draw_byte_8(unsigned char *glyph, unsigned char *base)
 	}
 }
 
-static void
-draw_byte_16(unsigned char *glyph, unsigned char *base)
+static void draw_byte_16(unsigned char *glyph, volatile unsigned char *base)
 {
 	int l;
 	int bits;
@@ -413,8 +407,7 @@ draw_byte_16(unsigned char *glyph, unsigned char *base)
 	}
 }
 
-static void
-draw_byte_24(unsigned char *glyph, unsigned char *base)
+static void draw_byte_24(unsigned char *glyph, volatile unsigned char *base)
 {
 	int l;
 	int bits;
@@ -450,10 +443,9 @@ draw_byte_24(unsigned char *glyph, unsigned char *base)
 	}
 }
 
-static void
-draw_byte(unsigned char c, unsigned long locX, unsigned long locY)
+static void draw_byte(unsigned char c, unsigned long locX, unsigned long locY)
 {
-	unsigned char *base;
+	volatile unsigned char *base;
 	unsigned char *glyph;
 	unsigned long x_base;
 	unsigned long y_base;
@@ -488,8 +480,7 @@ draw_byte(unsigned char c, unsigned long locX, unsigned long locY)
 	}
 }
 
-static void
-vga_scroll()
+static void vga_scroll(void)
 {
 	unsigned long j;
 	unsigned long i;
@@ -517,10 +508,9 @@ vga_scroll()
 		*dst++ = bg32;
 }
 
-static void vga_clear();
+static void vga_clear(void);
 
-int
-vga_init(char *mode)
+int vga_init(const char *mode)
 {
 	GDHandle hdl;
 	volatile PixMapPtr pm;
@@ -566,14 +556,13 @@ vga_init(char *mode)
 	if (strcmp(mode, "none") != 0)
 	{
 		vga.enabled = 1;
-		vga_clear();
+		//vga_clear();
 	}
 
 	return 0;
 }
 
-static void
-vga_clear()
+static void vga_clear(void)
 {
 	int i,j;
 	unsigned long row;
@@ -611,8 +600,7 @@ vga_clear()
 	vga_cursor_refresh();
 }
 
-void
-vga_put(char c)
+void vga_put(char c)
 {
 	int tmp_x, tmp_y;
 	char *end;
@@ -785,32 +773,32 @@ exit_escape:
 	vga_cursor_refresh();
 }
 
-unsigned long vga_get_videobase()
+unsigned long vga_get_videobase(void)
 {
 	return (unsigned long)vga.base;
 }
 
-unsigned long vga_get_row_bytes()
+unsigned long vga_get_row_bytes(void)
 {
 	return vga.row_bytes;
 }
 
-unsigned long vga_get_depth()
+unsigned long vga_get_depth(void)
 {
 	return vga.depth;
 }
 
-unsigned long vga_get_width()
+unsigned long vga_get_width(void)
 {
 	return vga.width;
 }
 
-unsigned long vga_get_height()
+unsigned long vga_get_height(void)
 {
 	return vga.height;
 }
 
-unsigned long vga_get_video()
+unsigned long vga_get_video(void)
 {
 	return (unsigned long)vga.video;
 }

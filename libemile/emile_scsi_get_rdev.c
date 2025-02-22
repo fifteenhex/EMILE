@@ -4,7 +4,7 @@
  *
  */
 
-#include "../libmap/libmap.h"
+#include "libmap.h"
 #include "libemile.h"
 
 int emile_scsi_get_rdev(char* dev_name, int* driver, int *disk, int *partition)

@@ -6,23 +6,25 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <scsi/scsi.h>
 
 #include <macos/errors.h>
 
 #include "libscsi.h"
 
-#define BUFFER_SIZE	(255)
+#define BUFFER_SIZE 255
+
 scsi_device_t *scsi_open(int target)
 {
 	scsi_device_t *dev;
-	unsigned char buff[BUFFER_SIZE];
+	volatile uint8_t buff[BUFFER_SIZE];
 	OSErr err;
 	int retries;
 
 	err = scsi_INQUIRY(target, buff, BUFFER_SIZE);
 	if (err != noErr)
-		printf("WARNING: cannot execute INQUIRY\n");
+		printf("WARNING: cannot execute INQUIRY: %d\n", err);
 
 	retries = 0;
 	while (retries < 300)
@@ -38,7 +40,7 @@ scsi_device_t *scsi_open(int target)
 	}
 	if (retries == 300)
 	{
-		printf("ERROR: unit not ready !\n");
+		printf("ERROR: unit not ready\n");
 		return NULL;
 	}
 

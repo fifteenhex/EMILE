@@ -9,7 +9,7 @@
 #include "libiso9660.h"
 #include "iso9660.h"
 
-int iso9660_lseek(stream_FILE *_file, long offset, int whence)
+off_t iso9660_lseek(stream_FILE *_file, off_t offset, int whence)
 {
 	iso9660_FILE *file = (iso9660_FILE*)_file;
 	long new_offset;

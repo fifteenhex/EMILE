@@ -64,7 +64,7 @@ struct emile_container *emile_second_create_mapfile(unsigned short *unit_id, cha
 	
 	/* write container to map file */
 
-	fd = open(mapfile, O_CREAT | O_WRONLY);
+	fd = open(mapfile, O_CREAT | O_WRONLY, 0600);
 	if (fd == -1)
 	{
 		fprintf(stderr, "ERROR: cannot create map file (%s)\n", mapfile);

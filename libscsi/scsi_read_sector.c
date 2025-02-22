@@ -18,7 +18,7 @@
  */
 
 int scsi_read_sector(scsi_device_t *device,
-		     off_t offset, void* buffer, size_t size)
+		     off_t offset, volatile void* buffer, size_t size)
 {
 	OSErr err;
 

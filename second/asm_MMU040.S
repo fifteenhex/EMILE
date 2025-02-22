@@ -3,6 +3,7 @@
  * (c) 2004 Laurent Vivier <Laurent@Vivier.EU>
  *
  */
+	.cpu 68040
 
 	.global MMU040_disable_cache
 MMU040_disable_cache:

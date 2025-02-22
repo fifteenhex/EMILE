@@ -14,16 +14,16 @@
 
 #include "libscsi.h"
 
+static const unsigned char cdb[6] = { 
+	TEST_UNIT_READY,
+	0,
+	0,
+	0,
+	0,
+	0
+};
+
 int scsi_TEST_UNIT_READY(int target)
 {
-	unsigned char	cdb[6];
-
-	cdb[0] = TEST_UNIT_READY;
-	cdb[1] = 0;
-	cdb[2] = 0;
-	cdb[3] = 0;
-	cdb[4] = 0;
-	cdb[5] = 0;
-
-	return scsi_command(target, cdb, 6, NULL);
+	return scsi_command(target, cdb, sizeof(cdb), NULL);
 }
