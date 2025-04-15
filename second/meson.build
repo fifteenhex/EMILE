@@ -35,8 +35,8 @@ second_lto_args = [ '-Wl,--undefined=start',
 		    '-Wl,--undefined=vsprintf',
 		    '-Wl,--undefined=strdup', 
 		    '-Wl,--undefined=strncmp']
-second_linkargs = [ '-no-pie', '-nostdlib', '-fpic', '-T' + second_linkerscript[0].full_path(), '-lgcc' ] + second_lto_args
-
+second_linkargs = [ '-no-pie', '-nostdlib', '-fpic', '-lgcc' ] + second_lto_args
+second_linkargs += [ '-L' + meson.source_root(), '-T' + '@0@'.format(second_linkerscript[0])]
 
 second_target = get_option('ostype')
 if second_target == 'm68k-linux'
