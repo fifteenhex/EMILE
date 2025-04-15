@@ -1,5 +1,5 @@
 project('EMILE', 'c',
-        meson_version: '>= 1.4.0')
+        meson_version: '>= 1.3.2')
 
 # Set the global version
 add_global_arguments('-DVERSION="xxx"', language: 'c')
