@@ -1,0 +1,6 @@
+[submodule "subprojects/picolibc"]
+	path = subprojects/picolibc
+	url = https://github.com/fifteenhex/picolibc.git
+[submodule "subprojects/rtgz-tinf-util"]
+	path = subprojects/rtgz-tinf-util
+	url = https://github.com/fifteenhex/rtgz-tinf-util.git

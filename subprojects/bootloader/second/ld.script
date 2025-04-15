@@ -1,0 +1,80 @@
+OUTPUT_ARCH(m68k)
+SECTIONS
+{
+	__text_start = .;
+	.text :
+	{
+		*(.text.head)
+		*(.text)
+		*(.text.*)
+	} =0x4e754e75
+	__text_end = .;
+
+
+	. = ALIGN(4);
+	__rodata_start = .;
+	.rodata :
+	{
+		*(.rodata)
+		*(.rodata.*)
+	}
+	__rodata_end = .;
+
+	. = ALIGN(4);
+	__got_start = .;
+	.got :
+	{
+		/* .got.plt must come before .got!! */
+		*(.got.plt)
+		*(.got)
+	}
+	__got_end = .;
+	/* ASSERT ((__got_start == __got_end), "Have something in GOT when there should be nothing!") */
+
+	. = ALIGN(4);
+	__rel_dyn_start = .;
+	.rela.dyn :
+	{
+		*(.rela.dyn)
+	}
+	__rel_dyn_end = .;
+
+	. = ALIGN(4);
+	__data_start = .;
+	.data :
+	{
+		*(.data)
+		*(.data.*)
+	}
+	__data_end = .;
+
+	. = ALIGN(4);
+	__bss_start = .;
+	.bss :
+	{
+		*(.bss*)
+	}
+	__bss_end = . ;
+
+	/* Stuff we don't want in the final output but discarding breaks readelf etc, generates noise */
+	.gnu.hash : {
+		*(.gnu.hash)
+	}
+
+	.dynstr : {
+		*(.dynstr)
+	}
+
+	.dynsym : {
+		*(.dynsym)
+	}
+
+	.note : {
+		*(.note .note.*)
+	}
+
+	/DISCARD/ : {
+		*(.dynamic)
+		*(.eh_frame .eh_frame.*)
+	}
+}

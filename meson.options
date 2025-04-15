@@ -1,1 +1,2 @@
-option('ostype', type: 'combo', choices: ['m68k-linux', 'classic-linux', 'ppc-linux', 'mixed-linux', 'm68k-netbsd'])
+option('compression_gzip', type : 'boolean', value : true)
+option('bootloader', type : 'boolean', value : false)

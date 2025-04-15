@@ -1,4 +1,4 @@
-name: Build EMILE
+name: Build EMILE (bootloader)
 on: [push]
 jobs:
   build:
@@ -12,8 +12,14 @@ jobs:
     - name: Setup environment
       run: sudo apt update && sudo apt install gcc-m68k-linux-gnu meson libext2fs-dev
 
-    - name: Setup build
-      run: meson setup --cross-file m68k-linux-gnu.txt build
+    - name: Setup build (bootloader)
+      run: meson setup --cross-file m68k-linux-gnu.txt -Dbootloader=true build-bootloader
 
-    - name: Build
-      run: meson compile -C build
+    - name: Build (bootloader)
+      run: meson compile -C build-bootloader
+
+    - name: Setup build (tools)
+      run: meson setup --cross-file m68k-linux-gnu.txt -Dbootloader=false build-tools
+
+    - name: Build (tools)
+      run: meson compile -C build-tools

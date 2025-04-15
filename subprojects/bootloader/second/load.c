@@ -1,0 +1,327 @@
+/*
+ *
+ * (c) 2004,2005 Laurent Vivier <Laurent@Vivier.EU>
+ *
+ */
+
+extern void list_unit(void);
+
+#include <stdio.h>
+#include <malloc.h>
+#include <elf.h>
+#include <string.h>
+#include <sys/types.h>
+
+#include <macos/types.h>
+#include <macos/devices.h>
+#include <macos/lowmem.h>
+#include <macos/osutils.h>
+#include <libui.h>
+#include <libstream.h>
+
+#include "console.h"
+#include "bank.h"
+#include "misc.h"
+
+#include "load.h"
+#include "driver.h"
+
+#define PAGE_SHIFT 12
+#define PAGE_SIZE (1UL << PAGE_SHIFT)
+
+#define BAR_STEP 40
+
+static int update_bar(off_t pos, void *data)
+{
+	emile_progressbar_t *pg = data;
+
+	emile_progressbar_value(pg, pos);
+
+	return 0;
+}
+
+static int bar_read(stream_t *stream, emile_progressbar_t *pg, char *buffer,
+		    int size, int current, int total_size)
+{
+	return stream_read_with_progress(stream, buffer, size, update_bar, pg);
+}
+
+static inline int load_is_correct_arch(Elf32_Ehdr *elf_header)
+{
+#ifdef ARCH_M68K
+	if (elf_header->e_machine == EM_68K)
+		return 1;
+
+	printf("Not MC680x0 architecture\n");
+#endif /* ARCH_M68K */
+#ifdef ARCH_PPC
+	if (elf_header->e_machine == EM_PPC)
+		return 1;
+
+	printf("Not PowerPC architecture\n");
+#endif /* ARCH_PPC */
+
+	return 0;
+}
+
+#define for_elf_phdr(_ehdr, _phdr) \
+	for (Elf32_Phdr *ph = (&_phdr[0]); ph < &_phdr[(_ehdr)->e_phnum]; ph++)
+
+static inline void load_kernel_find_min_max_len(Elf32_Ehdr *elf_header,
+						Elf32_Phdr *program_header,
+						uint32_t *min, uint32_t *max,
+						uint32_t *len)
+{
+	uint32_t min_addr = 0xffffffff;
+	uint32_t max_addr = 0;
+	uint32_t sz = 0;
+
+	for_elf_phdr(elf_header, program_header)
+	{
+		if (ph->p_memsz == 0)
+			continue;
+		min_addr = (min_addr > ph->p_vaddr) ? ph->p_vaddr : min_addr;
+		max_addr = (max_addr < ph->p_vaddr + ph->p_memsz) ?
+				   ph->p_vaddr + ph->p_memsz :
+				   max_addr;
+		sz += ph->p_filesz;
+	}
+
+	*min = min_addr;
+	*max = max_addr;
+	*len = sz;
+}
+
+void *load_kernel(char *path, int bootstrap_size, unsigned long *base,
+		  unsigned long *entry, unsigned long *size)
+{
+	Elf32_Ehdr elf_header;
+	Elf32_Phdr *program_header;
+	int ret;
+	uint32_t min_addr, max_addr, kernel_size, to_read;
+	char *kernel;
+	stream_t *stream;
+	int read;
+	emile_window_t win;
+	emile_progressbar_t *pg;
+	int l, c;
+
+	console_get_size(&l, &c);
+
+	win.l = l - 6;
+	win.h = 1;
+
+	win.w = (c * 75 + 50) / 100;
+	win.c = (c - win.w + 1) / 2;
+
+	console_set_cursor_position(
+		win.l - 2, win.c + (win.w - strlen("Loading kernel")) / 2);
+	printf("Loading kernel");
+
+	stream = stream_open(path);
+	if (stream == NULL) {
+		printf("Cannot open kernel\n");
+		return NULL;
+	}
+
+	/* Wrap the stream in a decompressor if needed */
+	if (stream_configure_decompressor(&stream))
+		return NULL;
+
+	ret = stream_read(stream, &elf_header, sizeof(Elf32_Ehdr));
+	if (ret != sizeof(Elf32_Ehdr)) {
+		printf("Cannot read kernel ELF header\n");
+		stream_shutdown(stream);
+		return NULL;
+	}
+
+	if (!load_is_correct_arch(&elf_header)) {
+		stream_shutdown(stream);
+		return NULL;
+	}
+
+	if (elf_header.e_type != ET_EXEC) {
+		printf("Not an executable file\n");
+		stream_shutdown(stream);
+		return NULL;
+	}
+
+	program_header =
+		(Elf32_Phdr *)malloc(elf_header.e_phnum * sizeof(Elf32_Phdr));
+	if (program_header == NULL) {
+		printf("Cannot allocate memory\n");
+		return NULL;
+	}
+
+	ret = stream_lseek(stream, elf_header.e_phoff, SEEK_SET);
+
+	ret = stream_read(stream, program_header,
+			  elf_header.e_phnum * sizeof(Elf32_Phdr));
+
+	load_kernel_find_min_max_len(&elf_header, program_header, &min_addr,
+				     &max_addr, &to_read);
+
+	if (min_addr == 0) {
+		min_addr = PAGE_SIZE;
+		program_header[0].p_vaddr += PAGE_SIZE;
+		program_header[0].p_offset += PAGE_SIZE;
+		program_header[0].p_filesz -= PAGE_SIZE;
+		program_header[0].p_memsz -= PAGE_SIZE;
+	}
+	kernel_size = max_addr - min_addr;
+	*base = min_addr;
+	*entry = elf_header.e_entry;
+	*size = kernel_size;
+
+	kernel = malloc_contiguous(kernel_size + PAGE_SIZE + bootstrap_size);
+	kernel = (((unsigned long)kernel + PAGE_SIZE) & ~(PAGE_SIZE - 1));
+	if (!check_full_in_bank((unsigned long)kernel, kernel_size)) {
+		printf("Kernel between two banks, contact maintainer\n");
+		free(kernel);
+		stream_shutdown(stream);
+		return NULL;
+	}
+
+	memset(kernel, 0, kernel_size);
+	read = 0;
+	pg = emile_progressbar_create(&win, to_read);
+	for_elf_phdr(&elf_header, program_header)
+	{
+		off_t off = ph->p_offset;
+		size_t sz = ph->p_filesz;
+
+		ret = stream_lseek(stream, off, SEEK_SET);
+		if (ret != off) {
+			printf("Cannot seek\n");
+			goto abort;
+		}
+
+		ret = bar_read(stream, pg, kernel + ph->p_vaddr - min_addr, sz,
+			       read, to_read);
+		if (ret != sz) {
+			printf("Read %d instead of %d\n", ret, ph->p_filesz);
+			printf("Cannot load\n");
+			goto abort;
+		}
+		read += ret;
+	}
+
+	/* Skip over the abort bit */
+	goto out;
+
+abort:
+	free(kernel);
+	kernel = NULL;
+out:
+	emile_progressbar_value(pg, to_read);
+	emile_progressbar_delete(pg);
+
+	stream_shutdown(stream);
+
+	return kernel;
+}
+
+char *load_ramdisk(char *path, unsigned long *ramdisk_size)
+{
+	stream_t *stream;
+	char *ramdisk_start;
+	char *ramdisk;
+	struct stream_stat stat;
+	int ret;
+	emile_window_t win;
+	emile_progressbar_t *pg;
+	int l, c;
+
+	console_get_size(&l, &c);
+
+	win.l = l - 2;
+	win.h = 1;
+
+	win.w = (c * 75 + 50) / 100;
+	win.c = (c - win.w + 1) / 2;
+
+	stream = stream_open(path);
+	if (stream == NULL) {
+		printf("Cannot open ramdisk\n");
+		return NULL;
+	}
+
+	stream_fstat(stream, &stat);
+
+	ramdisk = (char *)malloc_top(stat.st_size + 4);
+	ramdisk_start = (char *)(((unsigned long)ramdisk + 3) & 0xFFFFFFFC);
+
+	if (!check_full_in_bank((unsigned long)ramdisk_start, stat.st_size)) {
+		printf("ramdisk between two banks, contact maintainer\n");
+		free(ramdisk);
+		stream_shutdown(stream);
+		return NULL;
+	}
+
+	console_set_cursor_position(
+		win.l - 2, win.c + (win.w - strlen("Loading RAMDISK")) / 2);
+	printf("Loading RAMDISK");
+
+	pg = emile_progressbar_create(&win, stat.st_size);
+	ret = bar_read(stream, pg, ramdisk_start, stat.st_size, 0,
+		       stat.st_size);
+	emile_progressbar_delete(pg);
+	putchar('\n');
+	if (ret != stat.st_size) {
+		printf("Cannot load\n");
+		free(ramdisk);
+		stream_shutdown(stream);
+	}
+	stream_shutdown(stream);
+
+	*ramdisk_size = stat.st_size;
+
+	return ramdisk_start;
+}
+
+char *load_chainloader(char *path)
+{
+	stream_t *stream;
+	struct stream_stat stat;
+	char *memory, *loader;
+	int ret;
+	int unit;
+
+	stream = stream_open(path);
+	if (stream == NULL) {
+		printf("Cannot load chainloader\n");
+		return NULL;
+	}
+	stream_fstat(stream, &stat);
+
+	unit = stat.st_dev;
+	memory = (char *)malloc(stat.st_size + 4);
+	loader = (char *)(((unsigned long)memory + 3) & 0xFFFFFFFC);
+
+	ret = stream_read(stream, loader, stat.st_size);
+
+	stream_shutdown(stream);
+
+	if (ret != stat.st_size) {
+		printf("Cannot read %jd from %s\n", stat.st_size, path);
+		free(loader);
+		return NULL;
+	}
+
+	unit = refnum_to_drive(scsi_id_to_refnum(unit));
+	LMSetBootDrive(unit);
+
+	if (loader[0] != 'L' || loader[1] != 'K') {
+		printf("Error: not a boot sector\n");
+		free(memory);
+		return NULL;
+	}
+
+	FlushDataCache();
+	FlushInstructionCache();
+	FlushExtCache();
+
+	loader += 2;
+
+	return loader;
+}
