@@ -1,0 +1,19 @@
+name: Build EMILE
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: Setup environment
+      run: sudo apt update && sudo apt install gcc-m68k-linux-gnu meson libext2fs-dev
+
+    - name: Setup build
+      run: meson setup --cross-file m68k-linux-gnu.txt build
+
+    - name: Build
+      run: meson compile -C build
