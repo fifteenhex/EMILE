@@ -22,9 +22,9 @@ int map_write_driver(map_t *map, int driver_number, char *driver)
 		return -1;
 
 	block = read_long(
-		(u_int32_t *)&map->drivers.DrvInfo[driver_number].Block);
+		struct_member_pointer(map, drivers.DrvInfo[driver_number].Block));
 	size = read_short(
-		(u_int16_t *)&map->drivers.DrvInfo[driver_number].Size);
+		struct_member_pointer(map, drivers.DrvInfo[driver_number].Size));
 
 	ret = map->device->ops->write_sector(map->device->data, block, driver,
 					     size * blocksize);

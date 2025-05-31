@@ -8,5 +8,5 @@
 
 int map_partition_is_valid(map_t *map)
 {
-	return read_short((u_int16_t *)&map->partition.Sig) == MAP_SIGNATURE;
+	return read_short(struct_member_pointer(map,partition.Sig)) == MAP_SIGNATURE;
 }

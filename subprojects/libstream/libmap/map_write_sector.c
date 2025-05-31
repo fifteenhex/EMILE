@@ -19,7 +19,7 @@ int map_write_sector(map_t *map, off_t offset, char *buffer, size_t size)
 	if (!map_partition_is_valid(map))
 		return -1;
 
-	offset += read_long((u_int32_t *)&map->partition.PyPartStart);
+	offset += read_long(struct_member_pointer(map, partition.PyPartStart));
 
 	ret = map->device->ops->write_sector(map->device->data, offset, buffer,
 					     size);

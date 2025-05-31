@@ -17,7 +17,7 @@ int map_read(map_t *map, int part)
 	if (map->current == part)
 		return part;
 
-	if (part > read_long((u_int32_t *)&map->partition.MapBlkCnt))
+	if (part > read_long(struct_member_pointer(map, partition.MapBlkCnt)))
 		return -1;
 
 	ret = map->device->ops->read_sector(map->device->data, 1 + part,

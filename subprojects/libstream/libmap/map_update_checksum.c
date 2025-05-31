@@ -17,15 +17,15 @@ int map_update_checksum(map_t *map, int driver_number)
 
 	blocksize = map_get_blocksize(map);
 	block = read_long(
-		(u_int32_t *)&map->drivers.DrvInfo[driver_number].Block);
+		struct_member_pointer(map, drivers.DrvInfo[driver_number].Block));
 
 	part = map_seek_driver_partition(map, block * blocksize / 512);
 
 	map_read(map, part);
 
-	length = read_long((u_int32_t *)&map->partition.BootSize);
+	length = read_long(struct_member_pointer(map, partition.BootSize));
 	checksum = map_checksum((unsigned char *)driver, length);
-	write_long((u_int32_t *)&map->partition.BootCksum, checksum);
+	write_long(struct_member_pointer(map, partition.BootCksum), checksum);
 
 	free(driver);
 

@@ -11,5 +11,5 @@
 
 int map_get_number(map_t *map)
 {
-	return read_long((u_int32_t *)&map->partition.MapBlkCnt);
+	return read_long(struct_member_pointer(map, partition.MapBlkCnt));
 }

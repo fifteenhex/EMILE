@@ -14,9 +14,9 @@ int map_set_driver_info(map_t *map, int number, int block, int size, int type)
 	if (number >= DD_MAX_DRIVER)
 		return -1;
 
-	write_long((u_int32_t *)&map->drivers.DrvInfo[number].Block, block);
-	write_short((u_int16_t *)&map->drivers.DrvInfo[number].Size, size);
-	write_short((u_int16_t *)&map->drivers.DrvInfo[number].Type, type);
+	write_long(struct_member_pointer(map, drivers.DrvInfo[number].Block), block);
+	write_short(struct_member_pointer(map, drivers.DrvInfo[number].Size), size);
+	write_short(struct_member_pointer(map, drivers.DrvInfo[number].Type), type);
 
 	return 0;
 }

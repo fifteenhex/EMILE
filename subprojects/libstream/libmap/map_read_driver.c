@@ -18,9 +18,9 @@ char *map_read_driver(map_t *map, int driver_number)
 		return NULL;
 
 	block = read_long(
-		(u_int32_t *)&map->drivers.DrvInfo[driver_number].Block);
+		struct_member_pointer(map,drivers.DrvInfo[driver_number].Block));
 	size = read_short(
-		(u_int16_t *)&map->drivers.DrvInfo[driver_number].Size);
+		struct_member_pointer(map,drivers.DrvInfo[driver_number].Size));
 
 	driver = malloc(size * blocksize);
 	if (driver == NULL)

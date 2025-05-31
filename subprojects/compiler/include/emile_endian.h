@@ -8,6 +8,7 @@
 #define _EMILE_ENDIAN_H
 #include <endian.h>
 
+#include <stdint.h>
 #include <stddef.h>
 #include <string.h>
 

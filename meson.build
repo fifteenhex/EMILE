@@ -20,7 +20,6 @@ add_global_arguments(warning_cflags, language: 'c')
 
 # Supress some warnings that need code fixes
 add_global_arguments('-Wno-multichar', language: 'c')
-add_global_arguments('-Wno-address-of-packed-member', language: 'c')
 
 if bootloader
     # Set some global cflags, these cannot be set in the baremetal subproject

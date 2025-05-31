@@ -8,5 +8,5 @@
 
 int map_is_valid(map_t *map)
 {
-	return read_short((u_int16_t *)&map->drivers.Sig) == DD_SIGNATURE;
+	return read_short(struct_member_pointer(map, drivers.Sig)) == DD_SIGNATURE;
 }

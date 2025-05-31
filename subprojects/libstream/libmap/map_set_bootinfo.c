@@ -14,11 +14,11 @@ int map_set_bootinfo(map_t *map, int bootstart, int bootsize, int bootaddr,
 	if (!map_is_valid(map))
 		return -1;
 
-	write_long((u_int32_t *)&map->partition.LgBootStart, bootstart);
-	write_long((u_int32_t *)&map->partition.BootSize, bootsize);
-	write_long((u_int32_t *)&map->partition.BootAddr, bootaddr);
-	write_long((u_int32_t *)&map->partition.BootEntry, bootentry);
-	write_long((u_int32_t *)&map->partition.BootCksum, checksum);
+	write_long(struct_member_pointer(map, partition.LgBootStart), bootstart);
+	write_long(struct_member_pointer(map, partition.BootSize), bootsize);
+	write_long(struct_member_pointer(map, partition.BootAddr), bootaddr);
+	write_long(struct_member_pointer(map, partition.BootEntry), bootentry);
+	write_long(struct_member_pointer(map, partition.BootCksum), checksum);
 	memset(map->partition.Processor, 0, sizeof(map->partition.Processor));
 	strcpy(map->partition.Processor, processor);
 

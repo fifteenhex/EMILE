@@ -14,7 +14,7 @@ int map_set_driver_number(map_t *map, int number)
 	if (number >= DD_MAX_DRIVER)
 		return -1;
 
-	write_short((u_int16_t *)&map->drivers.DrvrCount, number);
+	write_short(struct_member_pointer(map, drivers.DrvrCount), number);
 
 	return 0;
 }
