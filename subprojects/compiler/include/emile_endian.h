@@ -8,28 +8,46 @@
 #define _EMILE_ENDIAN_H
 #include <endian.h>
 
+#include <stddef.h>
+#include <string.h>
+
+/* 
+ * Use this to get the address of member in a packed struct without
+ * alignment warnings. You still need to handle the potentially unaligned pointer correctly.
+ */
+#define struct_member_pointer(_struct_ptr, _member) \
+	(((void *)_struct_ptr) + offsetof(typeof(*_struct_ptr), _member))
+
 #if __BYTE_ORDER == __BIG_ENDIAN
 
 /* nothing to do, because m68k is big endian too */
 
-static inline u_int16_t read_short(u_int16_t *addr)
+static inline uint16_t read_short(const void *addr)
 {
-	return *addr;
+	uint16_t val;
+
+	memcpy(&val, addr, sizeof(val));
+
+	return val;
 }
 
-static inline void write_short(u_int16_t *addr, u_int16_t value)
+static inline void write_short(void *addr, uint16_t value)
 {
-	*addr = value;
+	memcpy(addr, &value, sizeof(value));
 }
 
-static inline u_int32_t read_long(u_int32_t *addr)
+static inline uint32_t read_long(const void *addr)
 {
-	return *addr;
+	uint32_t val;
+
+	memcpy(&val, addr, sizeof(val));
+
+	return val;
 }
 
-static inline void write_long(u_int32_t *addr, u_int32_t value)
+static inline void write_long(void *addr, uint32_t value)
 {
-	*addr = value;
+	memcpy(addr, &value, sizeof(value));
 }
 
 #else /* __BYTE_ORDER == __LITTLE_ENDIAN */

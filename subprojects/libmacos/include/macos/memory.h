@@ -22,10 +22,11 @@ static inline void *NewPtr(unsigned long byteCount)
 {
 	register void *ptr;
 
-	asm volatile("move.l %1, %%d0\n" Trap(_NewPtr) "	move.l %%a0, %0\n"
-		     : "=g"(ptr)
-		     : "g"(byteCount)
-		     : "%%d0", UNPRESERVED_REGS);
+	asm volatile(
+		"move.l %1, %%d0\n" Trap(_NewPtr) "	move.l %%a0, %0\n"
+		: "=g"(ptr)
+		: "g"(byteCount)
+		: "%%d0", UNPRESERVED_REGS);
 
 	return ptr;
 }

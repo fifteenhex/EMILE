@@ -64,7 +64,7 @@
 
 #define SlotManagerSelector(a) "	move.l	#" #a ", %%d0"
 
-#define SlotManager(selector)                           \
+#define SlotManager(selector)                          \
 	SlotManagerSelector(selector) "	/* " #selector \
 				      " */\n" Trap(_SlotManager)
 
@@ -84,9 +84,9 @@
 
 #define SCSIDispatchSelector(a) "	move.w	#" #a ", -(%%sp)"
 
-#define SCSIDispatch(selector)                                        \
+#define SCSIDispatch(selector)                                               \
 	SCSIDispatchSelector(selector) "	/* " #selector " */\n" Trap( \
-		_SCSIDispatch) "move.w	(%%sp)+, %%d0\n"               \
+		_SCSIDispatch) "move.w	(%%sp)+, %%d0\n"                      \
 			       "ext.l	%%d0\n"
 
 /*
@@ -125,7 +125,7 @@
 
 #define MemoryDispatchSelector(a) "	move.l	#" #a ", %%d0"
 
-#define MemoryDispatch(selector)                                \
+#define MemoryDispatch(selector)                               \
 	MemoryDispatchSelector(selector) "	/* " #selector \
 					 " */\n" Trap(_MemoryDispatch)
 
