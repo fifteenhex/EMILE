@@ -29,14 +29,13 @@ if bootloader
     # If the toolchain is configured with musl picolibc is borked so..
     # 1. remove musl's (and everything else..) headers from the search path
     add_global_arguments('-nostdinc', language: 'c')
-    # 2. work out where libgcc.a is and use the directory to work out where GCCs
-    # header thingies are and add that to the commandline, picolibc is happy now
-    fs = import('fs')
-    libgcc_a_path = run_command(cc, '-print-libgcc-file-name').stdout().strip()
-    gcc_dir = fs.parent(libgcc_a_path)
-    gcc_inc = gcc_dir + '/include'
-    add_global_arguments('-I' + gcc_inc, language: 'c')
-    # libext2 and libiso9660 use linux headers so add the sysroot back
+    # 2. work out where the compiler headers are..    
+    compiler_install = run_command(cc.cmd_array() + ['-print-search-dirs'], check : true).stdout().split('\n')[0].split(' ')[1]
+    compiler_include = compiler_install / 'include'
+
+    add_global_arguments('-I' + compiler_include, language: 'c')
+
+    #libext2 and libiso9660 use linux headers so add the sysroot back
     add_global_arguments('-I$SYSROOT/usr/include/', language: 'c')
 
     add_global_arguments('-ffreestanding', language: 'c')
