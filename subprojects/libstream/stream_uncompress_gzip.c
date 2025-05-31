@@ -280,6 +280,7 @@ struct progress_wrapper {
 	struct gzip_cntx *cntx;
 	int (*cb)(off_t pos, void *data);
 	void *cb_data;
+	int done;
 };
 
 static int gzip_cb_read_input_progress(void *v)
@@ -295,7 +296,11 @@ static int gzip_cb_write_output_progress(void *v, unsigned char c)
 
 	int ret = gzip_cb_write_output(wrapper->cntx, c);
 
-	wrapper->cb(wrapper->cntx->curr_pos, wrapper->cb_data);
+	wrapper->done++;
+	if (wrapper->done == (1024 * 32)) {
+		wrapper->cb(wrapper->cntx->curr_pos, wrapper->cb_data);
+		wrapper->done = 0;
+	}
 
 	return ret;
 }
