@@ -36,7 +36,6 @@
 #define TINF_ZLIB 0
 #define TINF_GZIP 0
 #define TINF_STREAM 1
-#define TINF_RESTARTABLE 1
 #define TINF_BUFFER 0
 #define TINF_ASSERT(x)
 #define TINFLATE_IMPLEMENTATION
@@ -52,11 +51,6 @@ struct gzip_file {
 
 	/* Our current file position in the uncompressed data */
 	off_t pos;
-
-	/* The position in the compressed data where we saw end of block */
-	off_t last_cmp_eob;
-	/* The positon in the uncompressed data where we saw end of block */
-	off_t last_unc_eob;
 
 	unsigned int data_start;
 };
@@ -216,46 +210,31 @@ static int gzip_cb_read_input(void *v)
 	return cntx->in_buf[buf_off];
 }
 
-static int gzip_cb_endofblock(void *v)
+static struct gzip_cntx *create_cntx(struct gzip_file *gzip_file, void *buf, size_t count)
 {
-	struct gzip_cntx *cntx = v;
-	struct gzip_file *gzip_file = cntx->gzip_file;
+	struct gzip_cntx *cntx;
 
-	//gzip_file->last_cmp_eob = cntx->in_file_pos + 1;
-	//gzip_file->last_unc_eob = cntx->curr_pos + 1;
+	cntx = zalloc(sizeof(*cntx));
+	if (!cntx)
+		return NULL;
 
-	return 0;
+	cntx->gzip_file = gzip_file;
+	cntx->dst = buf;
+	cntx->need = count;
+
+	return cntx;
 }
 
 static size_t gzip_read(void *file, void *buf, size_t count)
 {
 	struct gzip_file *gzip_file = (struct gzip_file *)file;
 	off_t file_offset = gzip_file->data_start;
-	off_t last_unc_eob = gzip_file->last_unc_eob;
 	struct gzip_cntx *cntx;
 	int ret;
 
-	cntx = zalloc(sizeof(*cntx));
+	cntx = create_cntx(gzip_file, buf, count);
 	if (!cntx)
 		return -1;
-
-	/* 
-	 * We might be restarting ... do we know where the end
-	 * of a block was and is it before of the same as the
-	 * position we'll start reading from?
-	 */
-	if (last_unc_eob && (gzip_file->pos >= last_unc_eob)) {
-		off_t last_cmp_eob = gzip_file->last_cmp_eob;
-
-		/* Yes, start decompressing from the end of the last block */
-		cntx->curr_pos = last_unc_eob;
-		cntx->in_file_pos = last_cmp_eob;
-		file_offset += cntx->in_file_pos;
-	}
-
-	cntx->gzip_file = gzip_file;
-	cntx->dst = buf;
-	cntx->need = count;
 
 	/* Make sure the sub stream is at the start of the compressed data */
 	ret = stream_lseek(gzip_file->sub_stream, file_offset, SEEK_SET);
@@ -263,8 +242,7 @@ static size_t gzip_read(void *file, void *buf, size_t count)
 		return -1;
 
 	ret = _tinf_stream_uncompress(&cntx->tinf_data, gzip_cb_read_input,
-				      gzip_cb_write_output, gzip_cb_endofblock,
-				      cntx);
+				      gzip_cb_write_output, cntx);
 	if (!((ret == TINF_OK) || (ret == TINF_CANCELLED)))
 		goto out;
 
@@ -298,11 +276,68 @@ static void gzip_close(void *file)
 {
 }
 
+struct progress_wrapper {
+	struct gzip_cntx *cntx;
+	int (*cb)(off_t pos, void *data);
+	void *cb_data;
+};
+
+static int gzip_cb_read_input_progress(void *v)
+{
+	struct progress_wrapper *wrapper = v;
+
+	return gzip_cb_read_input(wrapper->cntx);
+}
+
+static int gzip_cb_write_output_progress(void *v, unsigned char c)
+{
+	struct progress_wrapper *wrapper = v;
+
+	int ret = gzip_cb_write_output(wrapper->cntx, c);
+
+	wrapper->cb(wrapper->cntx->curr_pos, wrapper->cb_data);
+
+	return ret;
+}
+
+static size_t gzip_read_with_progress(void *file, void *buf, size_t count,
+				  int (*cb)(off_t pos, void *data),
+				  void *cb_data)
+{
+	struct gzip_file *gzip_file = (struct gzip_file *)file;
+	off_t file_offset = gzip_file->data_start;
+	struct gzip_cntx *cntx;
+	int ret;
+
+	cntx = create_cntx(gzip_file, buf, count);
+	if (!cntx)
+		return -1;
+	
+	struct progress_wrapper wrapper = {
+		.cntx = cntx,
+		.cb = cb,
+		.cb_data = cb_data,
+	};
+	
+	/* Make sure the sub stream is at the start of the compressed data */
+	ret = stream_lseek(gzip_file->sub_stream, file_offset, SEEK_SET);
+	if (ret != file_offset)
+		return -1;
+
+	ret = _tinf_stream_uncompress(&cntx->tinf_data, gzip_cb_read_input_progress,
+								  gzip_cb_write_output_progress, &wrapper);
+	if (!((ret == TINF_OK) || (ret == TINF_CANCELLED)))
+		return ret;
+
+	return count;
+};
+
 static const struct filesystem_io_t gzip_io = {
 	.read = gzip_read,
 	.lseek = gzip_lseek,
 	.close = gzip_close,
 	.fstat = gzip_fstat,
+	.read_with_progress = gzip_read_with_progress,
 };
 
 stream_t *stream_wrap_gzip(stream_t *stream)

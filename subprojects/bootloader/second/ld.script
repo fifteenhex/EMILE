@@ -5,6 +5,7 @@ SECTIONS
 	.text :
 	{
 		*(.text.head)
+		*(.text.reloc)
 		*(.text)
 		*(.text.*)
 	} =0x4e754e75

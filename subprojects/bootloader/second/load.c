@@ -99,7 +99,7 @@ void *load_kernel(char *path, int bootstrap_size, unsigned long *base,
 	Elf32_Phdr *program_header;
 	int ret;
 	uint32_t min_addr, max_addr, kernel_size, to_read;
-	char *kernel;
+	void *kernel;
 	stream_t *stream;
 	int read;
 	emile_window_t win;
@@ -174,7 +174,8 @@ void *load_kernel(char *path, int bootstrap_size, unsigned long *base,
 	*size = kernel_size;
 
 	kernel = malloc_contiguous(kernel_size + PAGE_SIZE + bootstrap_size);
-	kernel = (((unsigned long)kernel + PAGE_SIZE) & ~(PAGE_SIZE - 1));
+	kernel = (void*)(((unsigned long)kernel + PAGE_SIZE) & ~(PAGE_SIZE - 1));
+
 	if (!check_full_in_bank((unsigned long)kernel, kernel_size)) {
 		printf("Kernel between two banks, contact maintainer\n");
 		free(kernel);

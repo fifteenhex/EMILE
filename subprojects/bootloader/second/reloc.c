@@ -24,7 +24,7 @@ typedef struct {
 #define R_68K_RELATIVE 22
 
 void relocate(uint32_t reloc_offset, Elf32_Rela *rel_start, Elf32_Rela *rel_end)
-	__attribute__((const));
+	__attribute__((const)) __attribute__((section(".text.reloc")));
 void relocate(uint32_t reloc_offset, Elf32_Rela *rel_start, Elf32_Rela *rel_end)
 {
 	/* Do ELF relocation */
