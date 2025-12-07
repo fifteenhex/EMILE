@@ -8,7 +8,6 @@
 #define __EXT2_H__
 
 #include <unistd.h>
-#include <linux/fs.h>
 #include <ext2fs/ext2_fs.h>
 
 #include <libstream.h>

@@ -158,6 +158,13 @@ static char *concat_path(char *root, char *path)
 	return full;
 }
 
+static const char *known_properties[] = { "root",
+										  "kernel",
+										  "args",
+										  "initrd",
+										  "chainloader",
+										  NULL };
+
 int read_config(emile_l2_header_t *info, emile_config_t *econfig)
 {
 	char property[COMMAND_LINE_LENGTH];
@@ -166,8 +173,6 @@ int read_config(emile_l2_header_t *info, emile_config_t *econfig)
 	char *title[MAX_KERNELS];
 	char *properties[MAX_KERNELS][MAX_KERNEL_PARAMS];
 	int prop_nb[MAX_KERNELS];
-	char *known_properties[] = { "root",   "kernel",      "args",
-				     "initrd", "chainloader", NULL };
 	int i;
 	int choice;
 	int current;

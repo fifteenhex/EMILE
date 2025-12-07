@@ -34,7 +34,7 @@ if bootloader
     add_global_arguments('-I' + compiler_include, language: 'c')
 
     #libext2 and libiso9660 use linux headers so add the sysroot back
-    add_global_arguments('-I/usr/m68k-linux-gnu/include/', language: 'c')
+    add_global_arguments('-I/usr/m68k-linux-gnu/include', language: 'c')
 
     add_global_arguments('-ffreestanding', language: 'c')
 

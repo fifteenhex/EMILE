@@ -19,8 +19,13 @@
  ***************************************************************************/
 
 .section .text.head
+
 .global _start
 _start:	
+	/* 
+	 * Do not add anything here, we expect the following
+	 * signature to always be at the exact same offset!
+	 */
 	bra	setup
 	
 _signature:		.dc.b	'E','M','0','7'
@@ -32,6 +37,7 @@ _configuration:		.skip	paramstring_length, 0
 
 	.align	4
 setup:
+	/* When trying to debug with QEMU + GDB put your "jmp ." here. */
 #if defined(APPLE_DRIVER)
 	lea	boot_unit(%pc), %a0
 	move.l	%d5, (%a0)
