@@ -50,6 +50,9 @@ second_linkargs += '-Wl,-pie'
 
 second_linkargs += '-Wl,--gc-sections'
 
+second_linkwith = [ ]
+# picolibc_semihosting
+
 second_linkargs += [ '-Wl,--no-dynamic-linker', '-Wl,-z', '-Wl,noexecstack', '-nostdlib', '-lgcc' ] + second_lto_args
 second_linkargs += [ '-L' + meson.source_root(), '-T' + '@0@'.format(second_linkerscript[0])]
 second_linkargs += [ '-Wl,-z', 'notext' ]
@@ -83,6 +86,7 @@ second_relocate_rela = [relocate_rela, '@OUTPUT@', '@INPUT@']
 
 second_floppy = executable('second_floppy_elf', second_srcs,
                     link_args: second_linkargs,
+                    link_with: second_linkwith,
                     dependencies: second_deps + libstream_dep,
                     c_args: second_cargs)
 
@@ -95,6 +99,7 @@ second_floppy_bin = custom_target('second_floppy_binary',
 
 second_scsi = executable('second_scsi_elf', second_srcs,
                     link_args: second_linkargs,
+                     link_with: second_linkwith,
                     dependencies: second_deps + libstream_dep,
                     c_args: second_cargs)
 
@@ -107,6 +112,7 @@ second_scsi_bin = custom_target('second_scsi_binary',
 
 second_full = executable('second_full_elf', second_srcs,
                     link_args: second_linkargs,
+                     link_with: second_linkwith,
                     dependencies: second_deps + libstream_dep,
                     c_args: second_cargs)
 
@@ -122,6 +128,7 @@ appledriver = executable('appledriver_elf',
                     dependencies: second_deps + libstream_dep,
                     c_args: second_cargs + '-DAPPLE_DRIVER',
                     link_args: second_linkargs,
+                    link_with: second_linkwith,
                     pie: false)
                     
 appledriver_bin = custom_target('appledriver_binary',

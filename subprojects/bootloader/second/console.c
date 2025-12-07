@@ -8,6 +8,10 @@
 #include <stdlib.h>
 #include <sys/types.h>
 
+// semihosting
+#include <fcntl.h>
+//
+
 #include <macos/lowmem.h>
 
 #include "vga.h"

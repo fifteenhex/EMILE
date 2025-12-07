@@ -75,6 +75,8 @@ int start(emile_l2_header_t *info)
 	unsigned long ramdisk_size;
 	emile_config_t econfig;
 
+	//sys_semihost_write0(__func__);
+
 	serial_init();
 	console_init();
 	arch_init();
