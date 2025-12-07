@@ -7,7 +7,7 @@ libcontainer_srcs = [ 'container_close.c',
 libcontainer_inc = include_directories('include')
 
 libcontainer_deps = [ ]
-if baremetal
+if bootloader
     libcontainer_deps += picolibc_dep
 endif
 
@@ -15,7 +15,7 @@ libcontainer = static_library('container',
                               libcontainer_srcs,
                               include_directories: [ libcontainer_inc, libstream_inc ],
                               dependencies: libcontainer_deps,
-                              pic: not baremetal)
+                              pic: not bootloader)
 libcontainer_dep = declare_dependency(link_with: libcontainer,
                                       include_directories: libcontainer_inc)
 

@@ -1,6 +1,6 @@
 project('libemile', 'c')
 
-libstream_proj = subproject('libstream', default_options: [ 'baremetal=false' ])
+libstream_proj = subproject('libstream')
 libstream_dep = libstream_proj.get_variable('libstream_dep')
 libstream_inc = libstream_proj.get_variable('libstream_inc_dirs')
 

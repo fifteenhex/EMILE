@@ -45,7 +45,7 @@ libmap_inc = include_directories('include')
 libmap_incs = [libmap_inc, libstream_inc, compiler_inc]
 
 libmap_deps = [ ]
-if baremetal
+if bootloader
     libmap_deps += picolibc_dep
 endif
 
@@ -53,7 +53,7 @@ libmap = static_library('map',
                         libmap_srcs,
                         include_directories: libmap_incs,
                         dependencies: libmap_deps,
-                        pic: not baremetal)
+                        pic: not bootloader)
 libmap_dep = declare_dependency(link_with: libmap,
                                 include_directories: [libmap_inc, compiler_inc])
 

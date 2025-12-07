@@ -11,14 +11,14 @@ libscsi_inc = include_directories('include')
 libscsi_incs = [ libscsi_inc, libstream_inc ]
 
 libscsi_deps = [ libmacos_dep ]
-if baremetal
+if bootloader
     libscsi_deps += picolibc_dep
 endif
 
 libscsi = static_library('libscsi', libscsi_srcs,
                          include_directories: libscsi_incs,
                          dependencies: libscsi_deps,
-                         pic: not baremetal)
+                         pic: not bootloader)
 
 libscsi_dep = declare_dependency(link_with:
                                  libscsi,

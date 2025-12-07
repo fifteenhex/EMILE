@@ -1,2 +1,2 @@
-option('baremetal', type : 'boolean', value : true)
+option('bootloader', type : 'boolean', value : true, yield : true)
 option('gzip', type : 'boolean', value : true)

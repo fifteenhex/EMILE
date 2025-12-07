@@ -13,7 +13,7 @@ picolibc_proj = subproject('picolibc',
 picolibc_dep = picolibc_proj.get_variable('picolibc_dep')
 #picolibc_semihosting = picolibc_proj.get_variable('lib_semihost')
 
-libstream_proj = subproject('libstream', default_options: [ 'baremetal=true'])
+libstream_proj = subproject('libstream')
                                                
 objcopy = find_program('objcopy')
 

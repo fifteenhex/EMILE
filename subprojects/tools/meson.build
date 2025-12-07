@@ -1,7 +1,7 @@
 project('emile-userspace-tools', 'c',
         meson_version: '>= 1.3.2')
 
-libemile_proj = subproject('libemile', default_options: [ 'baremetal=false' ])
+libemile_proj = subproject('libemile')
 libemile_dep = libemile_proj.get_variable('libemile_dep')
 
 tools_inc = include_directories('include')

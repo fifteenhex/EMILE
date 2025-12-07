@@ -8,12 +8,12 @@ compiler_inc = compiler_proj.get_variable('compiler_inc')
 libstream_inc = [ include_directories('include') ]
 libstream_inc += compiler_inc
 
-# Are we building this for the userspace tools or for the baremetal part?
-baremetal = get_option('baremetal')
+# Are we building this for the userspace tools or for the bootloader part?
+bootloader = get_option('bootloader')
 enable_gzip = get_option('gzip')
 
 libstream_dep = [ ]
-if baremetal
+if bootloader
     picolibc_proj = subproject('picolibc',
                             default_options: [ 'multilib=false',
                                                 'freestanding=true',
@@ -33,7 +33,7 @@ subdir('libext2')
 subdir('libiso9660')
 subdir('libmap')
 
-if baremetal
+if bootloader
     libmacos_proj = subproject('libmacos')
     libmacos_dep = libmacos_proj.get_variable('libmacos_dep')
     libstream_dep += libmacos_dep
@@ -73,7 +73,7 @@ if enable_gzip
     libstream_srcs += 'stream_uncompress_gzip.c'
 endif
 
-if baremetal
+if bootloader
     libstream_dep += picolibc_dep
 
     libstream_full_flags += [ libstream_scsi_flag,
